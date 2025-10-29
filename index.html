@@ -273,8 +273,15 @@
     
   // ====== CONFIG ======
   // Point this to your running FastAPI server (uvicorn main:app --port 8000)
-  const BACKEND_URL = "https://frotiscan.onrender.com";
-  const LIVE = BACKEND_URL.trim() !== "";
+  // fix: no trailing slash + safe join
+const BACKEND_URL = "https://frotiscan.onrender.com";    // <-- remove trailing slash
+const API = (p) => `${BACKEND_URL}${p.startsWith("/") ? p : `/${p}`}`;
+const res = await fetch(API("/api/scan"), {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ target: domain }),
+});
+
 
   // ====== DOM SHORTCUTS ======
   const $ = (id) => document.getElementById(id);
@@ -461,4 +468,3 @@ ${notesWrap.classList.contains("hidden") ? "" : "Notes:\n- " + Array.from(docume
   
 </body>
 </html>
-
