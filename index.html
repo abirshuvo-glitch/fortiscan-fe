@@ -270,199 +270,188 @@
 
   <!-- Inline script (demo-ready; set BACKEND_URL for live) -->
   <script>
-    
-  // ====== CONFIG ======
-  // Point this to your running FastAPI server (uvicorn main:app --port 8000)
-  // fix: no trailing slash + safe join
-const BACKEND_URL = "https://frotiscan.onrender.com";    // <-- remove trailing slash
-const API = (p) => `${BACKEND_URL}${p.startsWith("/") ? p : `/${p}`}`;
-const res = await fetch(API("/api/scan"), {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ target: domain }),
-});
+// ====== CONFIG ======
+const BACKEND_URL = "https://frotiscan.onrender.com";  // no trailing slash
+const LIVE = BACKEND_URL.trim() !== "";
+const API  = (p) => `${BACKEND_URL}${p.startsWith("/") ? p : `/${p}`}`;
 
+// ====== DOM SHORTCUTS ======
+const $ = (id) => document.getElementById(id);
+const target   = $("target");
+const scanBtn  = $("scanBtn");
+const loading  = $("loading");
+const card     = $("card");
+const modeHint = $("modeHint");
 
-  // ====== DOM SHORTCUTS ======
-  const $ = (id) => document.getElementById(id);
-  const target   = $("target");
-  const scanBtn  = $("scanBtn");
-  const loading  = $("loading");
-  const card     = $("card");
-  const modeHint = $("modeHint");
+const rHost   = $("r-host");
+const rIP     = $("r-ip");
+const rGrade  = $("r-grade");
+const rScore  = $("r-score");
+const rHttps  = $("r-https");
+const rSSL    = $("r-ssl");
+const rSSLexp = $("r-ssl-exp");
 
-  const rHost   = $("r-host");
-  const rIP     = $("r-ip");
-  const rGrade  = $("r-grade");
-  const rScore  = $("r-score");
-  const rHttps  = $("r-https");
-  const rSSL    = $("r-ssl");
-  const rSSLexp = $("r-ssl-exp");
+const portsRow = $("portsRow");
+const rPorts   = $("r-ports");
 
-  const portsRow = $("portsRow");
-  const rPorts   = $("r-ports");
+const notesWrap = $("notesWrap");
+const rNotes    = $("r-notes");
 
-  const notesWrap = $("notesWrap");
-  const rNotes    = $("r-notes");
+const badge = $("badge");
+const dial  = $("dial");
+const dialLetter = $("dialLetter");
 
-  const badge = $("badge");
-  const dial  = $("dial");
-  const dialLetter = $("dialLetter");
+const btnCopy  = $("btnCopy");
+const btnReset = $("btnReset");
+const toast    = $("toast");
 
-  const btnCopy  = $("btnCopy");
-  const btnReset = $("btnReset");
-  const toast    = $("toast");
+// ====== UI HELPERS ======
+function show(el){ el.classList.remove("hidden"); }
+function hide(el){ el.classList.add("hidden"); }
+function toastShow(msg){
+  toast.firstElementChild.textContent = msg;
+  show(toast);
+  setTimeout(()=> hide(toast), 1300);
+}
+function badgeClass(g){
+  const b="px-2 py-1 rounded-lg text-xs font-semibold border ";
+  return g==="A"?b+"border-emerald-600 bg-emerald-500/15 text-emerald-300":
+         g==="B"?b+"border-lime-600 bg-lime-500/15 text-lime-300":
+         g==="C"?b+"border-yellow-600 bg-yellow-500/15 text-yellow-300":
+         g==="D"?b+"border-orange-600 bg-orange-500/15 text-orange-300":
+         g==="F"?b+"border-rose-600 bg-rose-500/15 text-rose-300":
+                  b+"border-white/10 bg-white/5";
+}
+function setDial(score, grade){
+  const color = grade==="A"?"#10b981":
+                grade==="B"?"#84cc16":
+                grade==="C"?"#eab308":
+                grade==="D"?"#f59e0b":"#f43f5e";
+  dial.style.setProperty("--val", String(score ?? 0));
+  dial.style.setProperty("--dial-color", color);
+  dialLetter.textContent = grade || "—";
+}
+function resetUI(){
+  hide(card); hide(loading);
+  rHost.textContent = "—";
+  rIP.textContent   = "—";
+  rGrade.textContent= "—";
+  rScore.textContent= "—";
+  rHttps.textContent= "—";
+  rSSL.textContent  = "—";
+  rSSLexp.textContent = "";
+  rPorts.textContent  = "—";
+  notesWrap.classList.add("hidden");
+  portsRow.classList.add("hidden");
+  badge.textContent = "—";
+  badge.className = "px-2 py-1 rounded-lg text-xs font-semibold border border-white/10 bg-white/5";
+  setDial(0,"—");
+}
 
-  // ====== UI HELPERS ======
-  function show(el){ el.classList.remove("hidden"); }
-  function hide(el){ el.classList.add("hidden"); }
-  function toastShow(msg){
-    toast.firstElementChild.textContent = msg;
-    show(toast);
-    setTimeout(()=> hide(toast), 1300);
+// ====== API CALL ======
+async function apiScan(domain){
+  if (!LIVE){
+    // demo fallback
+    await new Promise(r=>setTimeout(r, 850));
+    const score = 88;
+    return {
+      host: domain,
+      ip: "93.184.216.34",
+      https_redirect: true,
+      ssl_valid: true,
+      ssl_expires_in_days: 220,
+      open_ports: [],
+      score,
+      grade: score>=90?"A":score>=75?"B":score>=60?"C":score>=40?"D":"F",
+      notes: [
+        "Enforce HSTS and redirect all HTTP traffic to HTTPS.",
+        "Rotate TLS certificates at least 30 days before expiry.",
+        "Demo mode: set BACKEND_URL in the script footer for live checks."
+      ]
+    };
   }
-  function badgeClass(g){
-    const b="px-2 py-1 rounded-lg text-xs font-semibold border ";
-    return g==="A"?b+"border-emerald-600 bg-emerald-500/15 text-emerald-300":
-           g==="B"?b+"border-lime-600 bg-lime-500/15 text-lime-300":
-           g==="C"?b+"border-yellow-600 bg-yellow-500/15 text-yellow-300":
-           g==="D"?b+"border-orange-600 bg-orange-500/15 text-orange-300":
-           g==="F"?b+"border-rose-600 bg-rose-500/15 text-rose-300":
-                    b+"border-white/10 bg-white/5";
-  }
-  function setDial(score, grade){
-    const color = grade==="A"?"#10b981":
-                  grade==="B"?"#84cc16":
-                  grade==="C"?"#eab308":
-                  grade==="D"?"#f59e0b":"#f43f5e";
-    dial.style.setProperty("--val", String(score ?? 0));
-    dial.style.setProperty("--dial-color", color);
-    dialLetter.textContent = grade || "—";
-  }
-  function resetUI(){
-    hide(card); hide(loading);
-    rHost.textContent = "—";
-    rIP.textContent   = "—";
-    rGrade.textContent= "—";
-    rScore.textContent= "—";
-    rHttps.textContent= "—";
-    rSSL.textContent  = "—";
-    rSSLexp.textContent = "";
-    rPorts.textContent  = "—";
-    notesWrap.classList.add("hidden");
-    portsRow.classList.add("hidden");
-    badge.textContent = "—";
-    badge.className = "px-2 py-1 rounded-lg text-xs font-semibold border border-white/10 bg-white/5";
-    setDial(0,"—");
-  }
 
-  // ====== API CALL ======
-  async function apiScan(domain){
-    // Demo fallback (if you clear BACKEND_URL)
-    if (!LIVE){
-      await new Promise(r=>setTimeout(r, 850));
-      const score = 88;
-      return {
-        host: domain,
-        ip: "93.184.216.34",
-        https_redirect: true,
-        ssl_valid: true,
-        ssl_expires_in_days: 220,
-        open_ports: [],
-        score,
-        grade: score>=90?"A":score>=75?"B":score>=60?"C":score>=40?"D":"F",
-        notes: [
-          "Enforce HSTS and redirect all HTTP traffic to HTTPS.",
-          "Rotate TLS certificates at least 30 days before expiry.",
-          "Demo mode: set BACKEND_URL in the script footer for live checks."
-        ]
-      };
+  const res = await fetch(API("/api/scan"), {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ target: domain })
+  });
+
+  if (!res.ok){
+    let err = "Scan failed";
+    try { const j = await res.json(); if (j.error) err = j.error; } catch {}
+    throw new Error(err);
+  }
+  return res.json();
+}
+
+// ====== SCAN FLOW ======
+async function runScan(){
+  const domain = (target.value || "").trim();
+  if (!domain){
+    alert("Enter a domain like example.com");
+    target.focus();
+    return;
+  }
+  hide(card); show(loading);
+  try{
+    const data = await apiScan(domain);
+
+    rHost.textContent  = data.host || "—";
+    rIP.textContent    = data.ip || "—";
+    rGrade.textContent = data.grade || "—";
+    rScore.textContent = data.score!=null?`(${data.score}/100)`:"—";
+    rHttps.textContent = data.https_redirect ? "Yes" : "No";
+    rSSL.textContent   = data.ssl_valid ? "Yes" : "No";
+    rSSLexp.textContent= data.ssl_expires_in_days!=null ? ` | expires in ${data.ssl_expires_in_days} days` : "";
+
+    if (Array.isArray(data.open_ports) && data.open_ports.length){
+      rPorts.textContent = data.open_ports.join(", ");
+      show(portsRow);
+    } else {
+      portsRow.classList.add("hidden");
     }
-    const res = await fetch(`${BACKEND_URL}/api/scan`, {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ target: domain })
-    });
-    if (!res.ok){
-      let err="Scan failed";
-      try{ const j=await res.json(); if(j.error) err=j.error }catch{}
-      throw new Error(err);
+
+    rNotes.innerHTML = "";
+    if (Array.isArray(data.notes) && data.notes.length){
+      data.notes.forEach(n=>{
+        const li=document.createElement("li");
+        li.textContent=n;
+        rNotes.appendChild(li);
+      });
+      show(notesWrap);
+    } else {
+      notesWrap.classList.add("hidden");
     }
-    return res.json();
+
+    badge.textContent = data.grade || "—";
+    badge.className   = badgeClass(data.grade);
+    setDial(data.score ?? 0, data.grade ?? "—");
+
+    hide(loading); show(card);
+  }catch(e){
+    hide(loading);
+    alert(e.message || "Network error");
   }
+}
 
-  // ====== SCAN FLOW ======
-  async function runScan(){
-    const domain = (target.value || "").trim();
-    if (!domain){
-      alert("Enter a domain like example.com");
-      target.focus();
-      return;
-    }
-    hide(card); show(loading);
-    try{
-      const data = await apiScan(domain);
-
-      // Fill top summary fields
-      rHost.textContent  = data.host || "—";
-      rIP.textContent    = data.ip || "—";
-      rGrade.textContent = data.grade || "—";
-      rScore.textContent = data.score!=null?`(${data.score}/100)`:"—";
-      rHttps.textContent = data.https_redirect ? "Yes" : "No";
-      rSSL.textContent   = data.ssl_valid ? "Yes" : "No";
-      rSSLexp.textContent= data.ssl_expires_in_days!=null ? ` | expires in ${data.ssl_expires_in_days} days` : "";
-
-      // Ports row
-      if (Array.isArray(data.open_ports) && data.open_ports.length){
-        rPorts.textContent = data.open_ports.join(", ");
-        show(portsRow);
-      } else {
-        portsRow.classList.add("hidden");
-      }
-
-      // Notes
-      rNotes.innerHTML = "";
-      if (Array.isArray(data.notes) && data.notes.length){
-        data.notes.forEach(n=>{
-          const li=document.createElement("li");
-          li.textContent=n;
-          rNotes.appendChild(li);
-        });
-        show(notesWrap);
-      } else {
-        notesWrap.classList.add("hidden");
-      }
-
-      // Badge/Dial
-      badge.textContent = data.grade || "—";
-      badge.className   = badgeClass(data.grade);
-      setDial(data.score ?? 0, data.grade ?? "—");
-
-      hide(loading); show(card);
-    }catch(e){
-      hide(loading);
-      alert(e.message || "Network error");
-    }
-  }
-
-  // ====== BOOT ======
-  document.getElementById("year").textContent = new Date().getFullYear();
-  resetUI();
-  modeHint.textContent = LIVE ? "Live mode enabled." : "Demo mode enabled. Set BACKEND_URL in the script footer for live checks.";
-
-  scanBtn.addEventListener("click", runScan);
-  target.addEventListener("keydown", (e)=>{ if (e.key === "Enter") runScan(); });
-  btnCopy?.addEventListener("click", async () => {
-    const text = `FortiScan Result
+// ====== BOOT ======
+document.getElementById("year").textContent = new Date().getFullYear();
+resetUI();
+modeHint.textContent = LIVE ? "Live mode enabled." : "Demo mode enabled. Set BACKEND_URL in the script footer for live checks.";
+scanBtn.addEventListener("click", runScan);
+target.addEventListener("keydown", (e)=>{ if (e.key === "Enter") runScan(); });
+btnCopy?.addEventListener("click", async () => {
+  const text = `FortiScan Result
 Host: ${rHost.textContent} (${rIP.textContent})
 Grade: ${rGrade.textContent} ${rScore.textContent}
 HTTPS redirect: ${rHttps.textContent}
 SSL valid: ${rSSL.textContent}${rSSLexp.textContent ? " " + rSSLexp.textContent : ""}
 ${notesWrap.classList.contains("hidden") ? "" : "Notes:\n- " + Array.from(document.querySelectorAll("#r-notes li")).map(li=>li.textContent).join("\n- ")}`.trim();
-    await navigator.clipboard.writeText(text);
-    toastShow("Copied to clipboard");
-  });
-  btnReset?.addEventListener("click", ()=>{ resetUI(); target.focus(); });
+  await navigator.clipboard.writeText(text);
+  toastShow("Copied to clipboard");
+});
+btnReset?.addEventListener("click", ()=>{ resetUI(); target.focus(); });
 </script>
 
   
