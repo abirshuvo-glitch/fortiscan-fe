@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>FortiScan — Instant Cyber Health Check for SMEs</title>
+  <meta name="description" content="FortiScan gives your website an instant A–F cyber health grade with clear, actionable fixes. Built for SMEs.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <!-- Favicon as data URI -->
+  <link rel="icon" href='data:image/svg+xml;utf8,
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+      <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#06b6d4"/><stop offset="50%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#7c3aed"/>
+      </linearGradient></defs>
+      <path d="M128 16l96 36v66c0 56-39 112-96 126C71 230 32 174 32 118V52l96-36z" fill="url(#g)"/>
+      <path d="M96 84h72v22h-50v20h42v22h-42v44h-22V84z" fill="url(#g)"/>
+    </svg>'>
+  <style>
+    :root { color-scheme: dark; }
+    html, body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; }
+    .bg-grid {
+      background:
+        radial-gradient(1200px 600px at 80% -10%, rgba(56,189,248,.18), transparent 60%),
+        radial-gradient(1000px 500px at -10% 10%, rgba(147,51,234,.15), transparent 60%),
+        linear-gradient(#020617, #020617);
+    }
+    .glass { background: rgba(2,6,23,.72); backdrop-filter: blur(10px); }
+    .fade { animation: fade .45s ease-out; } @keyframes fade { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .spin { animation: spin 1s linear infinite; } @keyframes spin { to { transform: rotate(360deg) } }
+    .focus-ring:focus { outline: none; box-shadow: 0 0 0 3px rgba(34,211,238,.45); }
+    .dial{ --val:0; --dial-color:#22d3ee; width:140px; height:140px; border-radius:999px;
+      background: conic-gradient(var(--dial-color) calc(var(--val)*1%), #0b1220 0);
+      display:grid; place-items:center; box-shadow: inset 0 0 0 10px #0b1220, 0 10px 30px rgba(0,0,0,.35);
+    }
+    .dial-inner{ width:92px; height:92px; border-radius:999px; background:#0b1220; display:grid; place-items:center;
+      box-shadow: inset 0 0 0 1px rgba(148,163,184,.2);
+    }
+    .toast { position: fixed; right: 18px; bottom: 18px; z-index: 50; }
+  </style>
+</head>
+<body class="min-h-screen bg-grid text-slate-100 selection:bg-cyan-500 selection:text-slate-900">
+  <!-- NAV -->
+  <header class="sticky top-0 z-40 border-b border-white/5 backdrop-blur bg-slate-950/50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a class="flex items-center gap-3 font-extrabold tracking-tight" href="#" aria-label="FortiScan home">
+        <!-- INLINE LOGO (always visible) -->
+        <svg width="26" height="26" viewBox="0 0 256 256" aria-hidden="true">
+          <defs>
+            <linearGradient id="fs-grad-1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#06b6d4"/><stop offset="50%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#7c3aed"/>
+            </linearGradient>
+          </defs>
+          <path d="M128 16l96 36v66c0 56-39 112-96 126C71 230 32 174 32 118V52l96-36z" fill="url(#fs-grad-1)"/>
+          <path d="M128 36l76 28v50c0 47-33 95-76 107c-43-12-76-60-76-107V64l76-28z" fill="#061122" opacity="0.75"/>
+          <path d="M96 84h72v22h-50v20h42v22h-42v44h-22V84z" fill="url(#fs-grad-1)"/>
+        </svg>
+        <span class="text-lg">FortiScan</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-6 text-sm text-slate-300">
+        <a class="hover:text-white" href="#features">Features</a>
+        <a class="hover:text-white" href="#app">App</a>
+        <a class="hover:text-white" href="#faq">FAQ</a>
+      </nav>
+      <a href="#app" class="px-3 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-sm">Launch App</a>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="relative">
+    <div class="max-w-6xl mx-auto px-4 py-16 grid lg:grid-cols-2 gap-10 items-center">
+      <div class="fade">
+        <div class="inline-flex items-center gap-2 text-cyan-300">
+          <!-- SMALL INLINE LOGO -->
+          <svg width="18" height="18" viewBox="0 0 256 256" aria-hidden="true">
+            <defs><linearGradient id="fs-grad-2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#06b6d4"/><stop offset="50%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#7c3aed"/>
+            </linearGradient></defs>
+            <path d="M128 16l96 36v66c0 56-39 112-96 126C71 230 32 174 32 118V52l96-36z" fill="url(#fs-grad-2)"/>
+            <path d="M96 84h72v22h-50v20h42v22h-42v44h-22V84z" fill="url(#fs-grad-2)"/>
+          </svg>
+          <span class="font-semibold">Built for Australian SMEs</span>
+        </div>
+        <h1 class="mt-2 text-4xl md:text-5xl font-extrabold leading-tight">
+          Cyber health checks that <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-400">build trust.</span>
+        </h1>
+        <p class="mt-4 text-slate-300 text-lg">
+          Type your domain. Get an A–F grade with clear, non-jargon fixes in seconds. No intrusive scans.
+        </p>
+        <div class="mt-6 flex gap-3">
+          <a href="#app" class="px-5 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold">Run a free check</a>
+          <a href="#features" class="px-5 py-3 rounded-xl border border-white/10 hover:border-white/20">See features</a>
+        </div>
+      </div>
+
+      <!-- Preview card -->
+      <div class="glass rounded-3xl border border-white/10 p-6 fade">
+        <div class="flex items-center gap-2 text-slate-300 text-sm">
+          <svg width="16" height="16" viewBox="0 0 256 256" aria-hidden="true">
+            <defs><linearGradient id="fs-grad-3" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#06b6d4"/><stop offset="50%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#7c3aed"/>
+            </linearGradient></defs>
+            <path d="M128 16l96 36v66c0 56-39 112-96 126C71 230 32 174 32 118V52l96-36z" fill="url(#fs-grad-3)"/>
+            <path d="M96 84h72v22h-50v20h42v22h-42v44h-22V84z" fill="url(#fs-grad-3)"/>
+          </svg>
+          Preview
+        </div>
+        <div class="mt-4 grid sm:grid-cols-[auto,1fr] gap-6 items-center">
+          <div class="dial" style="--val:94; --dial-color:#10b981">
+            <div class="dial-inner"><div class="text-3xl font-extrabold">A</div></div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold">Grade: A <span class="text-slate-400 text-lg">(94/100)</span></div>
+            <div class="mt-1 text-slate-300 text-sm">HTTPS redirect: Yes • SSL valid • Expires in 250 days</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="max-w-6xl mx-auto px-4 py-12">
+    <h2 class="text-2xl font-bold">Why FortiScan</h2>
+    <div class="mt-6 grid md:grid-cols-3 gap-6">
+      <div class="rounded-2xl glass border border-white/10 p-6">
+        <div class="text-cyan-400 font-semibold">Crystal-clear grading</div>
+        <p class="text-slate-300 mt-2">Instant A–F grade with rationale — no jargon, just facts and fixes.</p>
+      </div>
+      <div class="rounded-2xl glass border border-white/10 p-6">
+        <div class="text-cyan-400 font-semibold">Actionable fixes</div>
+        <p class="text-slate-300 mt-2">Step-by-step notes your IT or web person can apply today.</p>
+      </div>
+      <div class="rounded-2xl glass border border-white/10 p-6">
+        <div class="text-cyan-400 font-semibold">Privacy-first</div>
+        <p class="text-slate-300 mt-2">Public, non-intrusive checks only. Built to build trust.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <section id="app" class="max-w-6xl mx-auto px-4 py-12">
+    <div class="grid lg:grid-cols-5 gap-8 items-start">
+      <!-- Input panel -->
+      <div class="lg:col-span-2 rounded-3xl glass border border-white/10 p-6 fade">
+        <h3 class="text-xl font-bold flex items-center gap-2">
+          <svg width="18" height="18" viewBox="0 0 256 256" aria-hidden="true">
+            <defs><linearGradient id="fs-grad-4" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#06b6d4"/><stop offset="50%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#7c3aed"/>
+            </linearGradient></defs>
+            <path d="M128 16l96 36v66c0 56-39 112-96 126C71 230 32 174 32 118V52l96-36z" fill="url(#fs-grad-4)"/>
+            <path d="M96 84h72v22h-50v20h42v22h-42v44h-22V84z" fill="url(#fs-grad-4)"/>
+          </svg>
+          Run a Check
+        </h3>
+        <p class="text-slate-300 mt-1">Enter a domain like <span class="font-mono">example.com</span>. Press <kbd class="px-1.5 py-0.5 rounded border border-white/10">Enter</kbd> to run.</p>
+
+        <div class="mt-4 flex gap-2">
+          <input id="target" class="flex-1 rounded-xl px-3 py-3 bg-slate-900 border border-white/10 focus-ring" placeholder="example.com" aria-label="Website domain"/>
+          <button id="scanBtn" class="px-5 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold">Scan</button>
+        </div>
+
+        <p id="modeHint" class="text-xs text-slate-400 mt-2">Demo mode enabled. Set <code>BACKEND_URL</code> in the script footer for live checks.</p>
+
+        <div class="mt-6 text-sm text-slate-400 flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 256 256" aria-hidden="true">
+            <defs><linearGradient id="fs-grad-5" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#06b6d4"/><stop offset="50%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#7c3aed"/>
+            </linearGradient></defs>
+            <path d="M128 16l96 36v66c0 56-39 112-96 126C71 230 32 174 32 118V52l96-36z" fill="url(#fs-grad-5)"/>
+            <path d="M96 84h72v22h-50v20h42v22h-42v44h-22V84z" fill="url(#fs-grad-5)"/>
+          </svg>
+          FortiScan performs public, non-intrusive checks only.
+        </div>
+      </div>
+
+      <!-- Result panel -->
+      <div class="lg:col-span-3 rounded-3xl glass border border-white/10 p-6 fade">
+        <div id="loading" class="hidden text-slate-300">
+          <div class="inline-flex items-center gap-2">
+            <svg class="w-5 h-5 spin" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity=".25" stroke-width="4"/>
+              <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4"/>
+            </svg>
+            Scanning… please wait
+          </div>
+        </div>
+
+        <div id="card" class="hidden space-y-5">
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-slate-400">Scan result</div>
+            <span id="badge" class="px-2 py-1 rounded-lg text-xs font-semibold border border-white/10 bg-white/5">—</span>
+          </div>
+
+          <div class="grid md:grid-cols-[auto,1fr] gap-6 items-center">
+            <div class="dial" id="dial" style="--val:0;">
+              <div class="dial-inner"><div id="dialLetter" class="text-3xl font-extrabold">—</div></div>
+            </div>
+
+            <div class="grid sm:grid-cols-2 gap-4 w-full">
+              <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div class="text-slate-400 text-sm">Host</div>
+                <div class="text-lg font-semibold"><span id="r-host">—</span> <span class="text-slate-500 text-sm">(<span id="r-ip">—</span>)</span></div>
+              </div>
+
+              <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div class="text-slate-400 text-sm">Grade</div>
+                <div class="text-lg font-semibold"><span id="r-grade">—</span> <span id="r-score" class="text-slate-400 font-normal">—</span></div>
+              </div>
+
+              <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div class="text-slate-400 text-sm">HTTPS redirect</div>
+                <div class="text-lg font-semibold" id="r-https">—</div>
+              </div>
+
+              <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div class="text-slate-400 text-sm">SSL status</div>
+                <div class="text-lg font-semibold">
+                  <span id="r-ssl">—</span>
+                  <span id="r-ssl-exp" class="text-slate-500 text-sm"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="portsRow" class="hidden rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div class="text-slate-400 text-sm mb-1">Open ports (signal)</div>
+            <div id="r-ports" class="text-slate-200">—</div>
+          </div>
+
+          <div id="notesWrap" class="hidden rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div class="text-slate-400 text-sm mb-1">Notes</div>
+            <ul id="r-notes" class="list-disc ml-6 space-y-1 text-slate-200"></ul>
+          </div>
+
+          <div class="pt-2 border-t border-white/10 flex flex-wrap gap-2">
+            <button id="btnCopy" class="px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-sm">Copy result</button>
+            <button id="btnReset" class="px-4 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-sm">New scan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="max-w-6xl mx-auto px-4 py-12">
+    <h2 class="text-2xl font-bold">FAQ</h2>
+    <details class="mt-4 rounded-2xl glass border border-white/10 p-5">
+      <summary class="cursor-pointer font-semibold">Do I need a backend?</summary>
+      <p class="mt-2 text-slate-300">No for demo mode. Yes for live checks. Set <code>BACKEND_URL</code> in the script footer.</p>
+    </details>
+    <details class="mt-3 rounded-2xl glass border border-white/10 p-5">
+      <summary class="cursor-pointer font-semibold">Is this a penetration test?</summary>
+      <p class="mt-2 text-slate-300">No. We use public signals only and provide high-level guidance.</p>
+    </details>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/5">
+    <div class="max-w-6xl mx-auto px-4 py-8 text-sm text-slate-400">
+      © <span id="year"></span> FortiScan. Educational and advisory use only.
+    </div>
+  </footer>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden">
+    <div class="rounded-xl bg-white/10 border border-white/10 px-4 py-3 text-sm">Copied to clipboard</div>
+  </div>
+
+  <!-- Inline script (demo-ready; set BACKEND_URL for live) -->
+  <script>
+    
+  // ====== CONFIG ======
+  // Point this to your running FastAPI server (uvicorn main:app --port 8000)
+  const BACKEND_URL = "https://frotiscan.onrender.com/";
+  const LIVE = BACKEND_URL.trim() !== "";
+
+  // ====== DOM SHORTCUTS ======
+  const $ = (id) => document.getElementById(id);
+  const target   = $("target");
+  const scanBtn  = $("scanBtn");
+  const loading  = $("loading");
+  const card     = $("card");
+  const modeHint = $("modeHint");
+
+  const rHost   = $("r-host");
+  const rIP     = $("r-ip");
+  const rGrade  = $("r-grade");
+  const rScore  = $("r-score");
+  const rHttps  = $("r-https");
+  const rSSL    = $("r-ssl");
+  const rSSLexp = $("r-ssl-exp");
+
+  const portsRow = $("portsRow");
+  const rPorts   = $("r-ports");
+
+  const notesWrap = $("notesWrap");
+  const rNotes    = $("r-notes");
+
+  const badge = $("badge");
+  const dial  = $("dial");
+  const dialLetter = $("dialLetter");
+
+  const btnCopy  = $("btnCopy");
+  const btnReset = $("btnReset");
+  const toast    = $("toast");
+
+  // ====== UI HELPERS ======
+  function show(el){ el.classList.remove("hidden"); }
+  function hide(el){ el.classList.add("hidden"); }
+  function toastShow(msg){
+    toast.firstElementChild.textContent = msg;
+    show(toast);
+    setTimeout(()=> hide(toast), 1300);
+  }
+  function badgeClass(g){
+    const b="px-2 py-1 rounded-lg text-xs font-semibold border ";
+    return g==="A"?b+"border-emerald-600 bg-emerald-500/15 text-emerald-300":
+           g==="B"?b+"border-lime-600 bg-lime-500/15 text-lime-300":
+           g==="C"?b+"border-yellow-600 bg-yellow-500/15 text-yellow-300":
+           g==="D"?b+"border-orange-600 bg-orange-500/15 text-orange-300":
+           g==="F"?b+"border-rose-600 bg-rose-500/15 text-rose-300":
+                    b+"border-white/10 bg-white/5";
+  }
+  function setDial(score, grade){
+    const color = grade==="A"?"#10b981":
+                  grade==="B"?"#84cc16":
+                  grade==="C"?"#eab308":
+                  grade==="D"?"#f59e0b":"#f43f5e";
+    dial.style.setProperty("--val", String(score ?? 0));
+    dial.style.setProperty("--dial-color", color);
+    dialLetter.textContent = grade || "—";
+  }
+  function resetUI(){
+    hide(card); hide(loading);
+    rHost.textContent = "—";
+    rIP.textContent   = "—";
+    rGrade.textContent= "—";
+    rScore.textContent= "—";
+    rHttps.textContent= "—";
+    rSSL.textContent  = "—";
+    rSSLexp.textContent = "";
+    rPorts.textContent  = "—";
+    notesWrap.classList.add("hidden");
+    portsRow.classList.add("hidden");
+    badge.textContent = "—";
+    badge.className = "px-2 py-1 rounded-lg text-xs font-semibold border border-white/10 bg-white/5";
+    setDial(0,"—");
+  }
+
+  // ====== API CALL ======
+  async function apiScan(domain){
+    // Demo fallback (if you clear BACKEND_URL)
+    if (!LIVE){
+      await new Promise(r=>setTimeout(r, 850));
+      const score = 88;
+      return {
+        host: domain,
+        ip: "93.184.216.34",
+        https_redirect: true,
+        ssl_valid: true,
+        ssl_expires_in_days: 220,
+        open_ports: [],
+        score,
+        grade: score>=90?"A":score>=75?"B":score>=60?"C":score>=40?"D":"F",
+        notes: [
+          "Enforce HSTS and redirect all HTTP traffic to HTTPS.",
+          "Rotate TLS certificates at least 30 days before expiry.",
+          "Demo mode: set BACKEND_URL in the script footer for live checks."
+        ]
+      };
+    }
+    const res = await fetch(`${BACKEND_URL}/api/scan`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ target: domain })
+    });
+    if (!res.ok){
+      let err="Scan failed";
+      try{ const j=await res.json(); if(j.error) err=j.error }catch{}
+      throw new Error(err);
+    }
+    return res.json();
+  }
+
+  // ====== SCAN FLOW ======
+  async function runScan(){
+    const domain = (target.value || "").trim();
+    if (!domain){
+      alert("Enter a domain like example.com");
+      target.focus();
+      return;
+    }
+    hide(card); show(loading);
+    try{
+      const data = await apiScan(domain);
+
+      // Fill top summary fields
+      rHost.textContent  = data.host || "—";
+      rIP.textContent    = data.ip || "—";
+      rGrade.textContent = data.grade || "—";
+      rScore.textContent = data.score!=null?`(${data.score}/100)`:"—";
+      rHttps.textContent = data.https_redirect ? "Yes" : "No";
+      rSSL.textContent   = data.ssl_valid ? "Yes" : "No";
+      rSSLexp.textContent= data.ssl_expires_in_days!=null ? ` | expires in ${data.ssl_expires_in_days} days` : "";
+
+      // Ports row
+      if (Array.isArray(data.open_ports) && data.open_ports.length){
+        rPorts.textContent = data.open_ports.join(", ");
+        show(portsRow);
+      } else {
+        portsRow.classList.add("hidden");
+      }
+
+      // Notes
+      rNotes.innerHTML = "";
+      if (Array.isArray(data.notes) && data.notes.length){
+        data.notes.forEach(n=>{
+          const li=document.createElement("li");
+          li.textContent=n;
+          rNotes.appendChild(li);
+        });
+        show(notesWrap);
+      } else {
+        notesWrap.classList.add("hidden");
+      }
+
+      // Badge/Dial
+      badge.textContent = data.grade || "—";
+      badge.className   = badgeClass(data.grade);
+      setDial(data.score ?? 0, data.grade ?? "—");
+
+      hide(loading); show(card);
+    }catch(e){
+      hide(loading);
+      alert(e.message || "Network error");
+    }
+  }
+
+  // ====== BOOT ======
+  document.getElementById("year").textContent = new Date().getFullYear();
+  resetUI();
+  modeHint.textContent = LIVE ? "Live mode enabled." : "Demo mode enabled. Set BACKEND_URL in the script footer for live checks.";
+
+  scanBtn.addEventListener("click", runScan);
+  target.addEventListener("keydown", (e)=>{ if (e.key === "Enter") runScan(); });
+  btnCopy?.addEventListener("click", async () => {
+    const text = `FortiScan Result
+Host: ${rHost.textContent} (${rIP.textContent})
+Grade: ${rGrade.textContent} ${rScore.textContent}
+HTTPS redirect: ${rHttps.textContent}
+SSL valid: ${rSSL.textContent}${rSSLexp.textContent ? " " + rSSLexp.textContent : ""}
+${notesWrap.classList.contains("hidden") ? "" : "Notes:\n- " + Array.from(document.querySelectorAll("#r-notes li")).map(li=>li.textContent).join("\n- ")}`.trim();
+    await navigator.clipboard.writeText(text);
+    toastShow("Copied to clipboard");
+  });
+  btnReset?.addEventListener("click", ()=>{ resetUI(); target.focus(); });
+</script>
+
+  
+</body>
+</html>
